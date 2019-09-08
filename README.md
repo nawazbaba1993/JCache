@@ -29,7 +29,8 @@ Now if we use only **HashTable** then we can't keep track of which data is acces
 1. Clone the repo.
 2. Run as java application.
 
-# Sample data output:
+# Sample data output: 
+Data which is most recently accessed is printed first and so on.
 ```
 CACHE AFTER ADDING DATA
 4-E
