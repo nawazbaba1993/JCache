@@ -1,4 +1,4 @@
-# CACHE
+# JCACHE
 cache implementation in java
 
 There are different types of chahing mechanism like LRU, LIFO etc. In this we will try to implement those using java.
