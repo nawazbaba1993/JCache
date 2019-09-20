@@ -10,8 +10,8 @@ import com.jcache.service.GenricCacheServiceImpl;
 public class CacheDriver {
 
 	public static void main(String[] args) {
-		EvictionPolicy<Integer, String> evictionPolicy = new LRUEvictionPolicy<>();
-		CacheService<Integer, String> service = new GenricCacheServiceImpl<Integer, String>(4, evictionPolicy);
+		EvictionPolicy<Integer, String> evictionPolicy = new LRUEvictionPolicy<>(4);
+		CacheService<Integer, String> service = new GenricCacheServiceImpl<Integer, String>(evictionPolicy);
 		service.storeData(1, "A");
 		service.storeData(2, "B");
 		service.storeData(3, "D");
