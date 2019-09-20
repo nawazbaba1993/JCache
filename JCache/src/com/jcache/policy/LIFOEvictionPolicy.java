@@ -5,14 +5,14 @@ import java.util.Map;
 import com.jcache.model.Cache;
 import com.jcache.model.CacheNode;
 
-public class LRUEvictionPolicy<T, E> implements EvictionPolicy<T, E> {
-
-	private Cache<T, E> cache;
+public class LIFOEvictionPolicy<E, T> implements EvictionPolicy<T, E> {
 	
+	private Cache<T, E> cache;
+
 	/**
 	 * @param size
 	 */
-	public LRUEvictionPolicy(int size) {
+	public LIFOEvictionPolicy(int size) {
 		super();
 		this.cache = new Cache<T, E>(size);
 	}
@@ -22,7 +22,6 @@ public class LRUEvictionPolicy<T, E> implements EvictionPolicy<T, E> {
 		Map<T, CacheNode<T, E>> cacheMap = cache.getCacheMap();
 		if(cacheMap.containsKey(key)) {
 			CacheNode<T, E> cacheNode = cacheMap.get(key);
-			moveToHead(cacheNode);
 			return cacheNode.getData();
 		}
 		return null;
@@ -35,17 +34,19 @@ public class LRUEvictionPolicy<T, E> implements EvictionPolicy<T, E> {
 			CacheNode<T, E> cacheNode = cacheMap.get(key);
 			CacheNode<T, E> next = cacheNode.getNext();
 			CacheNode<T, E> prev = cacheNode.getPrev();
-			if(prev != null)
+			if(prev != null) {
 				prev.setNext(next);
-			if(next != null)
+			}
+			if(next != null) {
 				next.setPrev(prev);
+			}
 			cacheMap.remove(key);
 		}
 	}
 
 	@Override
 	public Cache<T, E> getCache() {
-		return this.cache;
+		return cache;
 	}
 
 	@Override
@@ -55,47 +56,35 @@ public class LRUEvictionPolicy<T, E> implements EvictionPolicy<T, E> {
 		if(cacheMap.containsKey(key)) {
 			cacheNode = cacheMap.get(key);
 			cacheNode.setData(data);
+			cacheNode.setKey(key);
 		} else {
 			if(cache.isCacheFull()) {
-				System.out.println("Cache is full calling eviction policy to evict cache");
 				evictFromCache();
 			}
 			cacheNode = new CacheNode<T, E>();
 			cacheNode.setData(data);
 			cacheNode.setKey(key);
+			CacheNode<T, E> cacheStart = cache.getCacheStart();
+			if(cacheStart != null) {
+				cacheNode.setNext(cacheStart);
+				cacheStart.setPrev(cacheNode);
+			} else {
+				cache.setCacheEnd(cacheNode);
+			}
+			cache.setCacheStart(cacheNode);
 		}
-		moveToHead(cacheNode);
-		
-	}
-
-	private void moveToHead(CacheNode<T, E> cacheNode) {
-		CacheNode<T, E> next = cacheNode.getNext();
-		CacheNode<T, E> prev = cacheNode.getPrev();
-		if(prev != null)
-			prev.setNext(next);
-		if(next != null)
-			next.setPrev(prev);
-		CacheNode<T, E> cacheStart = cache.getCacheStart();
-		cacheNode.setNext(cacheStart);
-		if(cacheStart != null) {
-			cacheNode.setPrev(cacheStart.getPrev());
-			cacheStart.setPrev(cacheNode);
-		} else {
-			cache.setCacheEnd(cacheNode);
-		}
-		cache.setCacheStart(cacheNode);
-		cache.getCacheMap().put(cacheNode.getKey(), cacheNode);
+		cacheMap.put(key, cacheNode);
+		cache.setCacheMap(cacheMap);
 	}
 
 	private void evictFromCache() {
-		CacheNode<T, E> cacheNode = cache.getCacheEnd();
-		Map<T, CacheNode<T, E>> cacheMap = cache.getCacheMap();
-		if(cacheMap.containsKey(cacheNode.getKey()))
-				cacheMap.remove(cacheNode.getKey());
-		cache.setCacheMap(cacheMap);
-		cacheNode.getPrev().setNext(null);
-		cache.setCacheEnd(cacheNode.getPrev());
-		
+		CacheNode<T,E> cacheEnd = cache.getCacheEnd();
+		if(cacheEnd != null) {
+			CacheNode<T, E> prev = cacheEnd.getPrev();
+			prev.setNext(cacheEnd.getNext());
+			cache.setCacheEnd(prev);
+			cache.getCacheMap().remove(cacheEnd.getKey());
+		}
 	}
 
 }

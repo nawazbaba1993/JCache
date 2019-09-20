@@ -3,6 +3,7 @@ package com.jcache.driver;
 import com.jcache.model.Cache;
 import com.jcache.model.CacheNode;
 import com.jcache.policy.EvictionPolicy;
+import com.jcache.policy.LIFOEvictionPolicy;
 import com.jcache.policy.LRUEvictionPolicy;
 import com.jcache.service.CacheService;
 import com.jcache.service.GenricCacheServiceImpl;
@@ -10,7 +11,8 @@ import com.jcache.service.GenricCacheServiceImpl;
 public class CacheDriver {
 
 	public static void main(String[] args) {
-		EvictionPolicy<Integer, String> evictionPolicy = new LRUEvictionPolicy<>(4);
+//		EvictionPolicy<Integer, String> evictionPolicy = new LRUEvictionPolicy<>(4);
+		EvictionPolicy<Integer, String> evictionPolicy = new LIFOEvictionPolicy<>(4);
 		CacheService<Integer, String> service = new GenricCacheServiceImpl<Integer, String>(evictionPolicy);
 		service.storeData(1, "A");
 		service.storeData(2, "B");
